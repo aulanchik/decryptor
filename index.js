@@ -39,9 +39,8 @@ function decrypt(token, method) {
             return `task_${convertAsciiToJson(path)}`;
         case 'inserted some non-hex characters': 
             return `task_${removeNonHexChars(path)}`;
-        case 'swapped every pair of characters': {
+        case 'swapped every pair of characters': 
             return `task_${swapCharacterPairs(path)}`;
-        }
         case 'encoded as base64':
             return `task_${decodeBase64(path)}`;
         default:
@@ -76,12 +75,12 @@ function swapCharacterPairs(inputString) {
 }
 
 function performCircularShift(inputString, method) {
-    const offset = extractOffsetValue(method);
+    const offset = extractValue(method);
     const adjustedOffset = offset % inputString.length;
     return inputString.slice(adjustedOffset) + inputString.slice(0, adjustedOffset);
 }
 
-function extractOffsetValue(inputString) {
+function extractValue(inputString) {
     const match = inputString.match(/\d+/);
     return match ? parseInt(match[0]) : 0;
 }
