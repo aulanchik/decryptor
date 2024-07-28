@@ -34,9 +34,16 @@ function decrypt(token, method) {
     switch(method) {
         case 'nothing':
             return `task_${path}`;
+        case 'converted to a JSON array of ASCII values': 
+            return `task_${convertAsciiToJson(path)}`;
         default:
             console.log(`Unknown encryption method received: ${method}`);
     }
+}
+
+function convertAsciiToJson(inputString) {
+    const asciiArray = JSON.parse(inputString);
+    return asciiArray.map(code => String.fromCharCode(code)).join('');
 }
 
 function main() {
