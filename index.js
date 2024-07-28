@@ -36,9 +36,15 @@ function decrypt(token, method) {
             return `task_${path}`;
         case 'converted to a JSON array of ASCII values': 
             return `task_${convertAsciiToJson(path)}`;
+        case 'inserted some non-hex characters': 
+            return `task_${removeNonHexChars(path)}`;
         default:
             console.log(`Unknown encryption method received: ${method}`);
     }
+}
+
+function removeNonHexChars(inputString) {
+    return inputString.replace(/[^a-fA-F0-9]/g, '');
 }
 
 function convertAsciiToJson(inputString) {
