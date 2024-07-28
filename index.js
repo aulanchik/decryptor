@@ -60,6 +60,7 @@ function performCircularShift(inputString, method) {
     const offset = extractOffsetValue(method);
     const adjustedOffset = offset % inputString.length;
     return inputString.slice(adjustedOffset) + inputString.slice(0, adjustedOffset);
+}
 
 function extractOffsetValue(inputString) {
     const match = inputString.match(/\d+/);
