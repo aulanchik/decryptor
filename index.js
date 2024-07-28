@@ -1,5 +1,46 @@
+const axios = require('axios');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const { API_URL, CONTENDER } = process.env;
+
+async function fetchInitialTask(contender) {
+    try {
+        const { data } = await axios.get(`${API_URL}/${contender}`);
+
+        console.log(data);
+        const result = decrypt(data.encrypted_path, data.encryption_method);
+        await fetchNextTask(result);
+
+    } catch(error) {
+        console.error(`Failed to fetch initial task: ${error.message || error}`);
+    }
+}
+
+async function fetchNextTask(token) {
+    try {
+        const { data } = await axios.get(`${API_URL}/${token}`);
+        const result = decrypt(data.encrypted_path, data.encryption_method);
+        await fetchNextTask(result);
+    } catch (error) {
+        console.error(`Failed to fetch task: ${error.message || error}`);
+    }
+}
+
+function decrypt(token, method) {
+    const path = token.replace(/[^a-zA-Z0-9\s,\[\]_]/g, '').replace(/task_/g, '');
+
+    switch(method) {
+        case 'nothing':
+            return `task_${path}`;
+        default:
+            console.log(`Unknown encryption method received: ${method}`);
+    }
+}
+
 function main() {
-    console.log('Hello, World!');
+    fetchInitialTask(CONTENDER);
 }
 
 main();
