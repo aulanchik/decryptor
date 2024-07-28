@@ -39,6 +39,9 @@ function decrypt(token, method) {
             return `task_${convertAsciiToJson(path)}`;
         case 'inserted some non-hex characters': 
             return `task_${removeNonHexChars(path)}`;
+        case 'swapped every pair of characters': {
+            return `task_${swapCharacterPairs(path)}`;
+        } 
         default:
             if (method.includes('circularly rotated left by')) {
                 return `task_${performCircularShift(path, method)}`;
@@ -54,6 +57,20 @@ function removeNonHexChars(inputString) {
 function convertAsciiToJson(inputString) {
     const asciiArray = JSON.parse(inputString);
     return asciiArray.map(code => String.fromCharCode(code)).join('');
+}
+
+function swapCharacterPairs(inputString) {
+    let cleanString = inputString.replace(/\s/g, '').trim();
+    
+    let result = ''; 
+    
+    for (let i = 0; i < cleanString.length; i += 2) {
+        const firstCharacter = cleanString[i];
+        const secondCharacter = cleanString[i + 1];
+        result += secondCharacter ? secondCharacter + firstCharacter : firstCharacter;
+    }
+
+    return result;
 }
 
 function performCircularShift(inputString, method) {
