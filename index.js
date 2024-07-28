@@ -41,7 +41,9 @@ function decrypt(token, method) {
             return `task_${removeNonHexChars(path)}`;
         case 'swapped every pair of characters': {
             return `task_${swapCharacterPairs(path)}`;
-        } 
+        }
+        case 'encoded as base64':
+            return `task_${decodeBase64(path)}`;
         default:
             if (method.includes('circularly rotated left by')) {
                 return `task_${performCircularShift(path, method)}`;
@@ -82,6 +84,10 @@ function performCircularShift(inputString, method) {
 function extractOffsetValue(inputString) {
     const match = inputString.match(/\d+/);
     return match ? parseInt(match[0]) : 0;
+}
+
+function decodeBase64(inputString) {
+    return Buffer.from(inputString, 'base64').toString('ascii');
 }
 
 function main() {
