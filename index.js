@@ -81,7 +81,7 @@ function performCircularShift(inputString, method) {
 }
 
 function extractValue(inputString) {
-    const match = inputString.match(/\d+/);
+    const match = inputString.match(/-?\d+/);
     return match ? parseInt(match[0]) : 0;
 }
 
