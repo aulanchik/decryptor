@@ -43,8 +43,8 @@ function decrypt(token, method) {
             return `task_${swapCharacterPairs(path)}`;
         case 'encoded as base64':
             return `task_${decodeBase64(path)}`;
-     default:
-        
+        default:
+      
             if (method.includes('circularly rotated left by')) {
                 return `task_${performCircularShift(path, method)}`;
             }
@@ -68,7 +68,6 @@ function convertAsciiToJson(inputString) {
 
 function swapCharacterPairs(inputString) {
     let cleanString = inputString.replace(/\s/g, '').trim();
-    
     let result = ''; 
     
     for (let i = 0; i < cleanString.length; i += 2) {
@@ -88,27 +87,18 @@ function performCircularShift(inputString, method) {
 
 function performOperationToAscii(inputString, method) {
     const value = extractValue(method);
-
-    console.debug(`Value: ${value}`);
-
     let result = '';
 
     for (let char of inputString) {
         const asciiCode = char.charCodeAt(0);
         const newAsciiCode = asciiCode + value;
-
-        console.debug(`ASCII: ${asciiCode}, New ASCII: ${newAsciiCode}`);
         result += String.fromCharCode(newAsciiCode);
     }
-
-    console.debug(`Result: ${result}`);
-
     return result;
 }
 
 function extractValue(inputString) {
     const match = inputString.match(/-?\d+/);
-
     return match ? parseInt(match[0]) : 0;
 }
 
