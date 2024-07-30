@@ -43,7 +43,8 @@ function decrypt(token, method) {
             return `task_${swapCharacterPairs(path)}`;
         case 'encoded as base64':
             return `task_${decodeBase64(path)}`;
-            default:
+     default:
+        
             if (method.includes('circularly rotated left by')) {
                 return `task_${performCircularShift(path, method)}`;
             }
@@ -107,6 +108,7 @@ function performOperationToAscii(inputString, method) {
 
 function extractValue(inputString) {
     const match = inputString.match(/-?\d+/);
+
     return match ? parseInt(match[0]) : 0;
 }
 
