@@ -43,10 +43,16 @@ function decrypt(token, method) {
             return `task_${swapCharacterPairs(path)}`;
         case 'encoded as base64':
             return `task_${decodeBase64(path)}`;
-        default:
+     default:
+        
             if (method.includes('circularly rotated left by')) {
                 return `task_${performCircularShift(path, method)}`;
             }
+
+            if(method.includes('to ASCII value of each character')) {
+                return `task_${performOperationToAscii(path, method)}`;
+            }
+
             throw new Error(`Unknown encryption method received: ${method}`);
     }
 }
@@ -80,8 +86,29 @@ function performCircularShift(inputString, method) {
     return inputString.slice(adjustedOffset) + inputString.slice(0, adjustedOffset);
 }
 
+function performOperationToAscii(inputString, method) {
+    const value = extractValue(method);
+
+    console.debug(`Value: ${value}`);
+
+    let result = '';
+
+    for (let char of inputString) {
+        const asciiCode = char.charCodeAt(0);
+        const newAsciiCode = asciiCode + value;
+
+        console.debug(`ASCII: ${asciiCode}, New ASCII: ${newAsciiCode}`);
+        result += String.fromCharCode(newAsciiCode);
+    }
+
+    console.debug(`Result: ${result}`);
+
+    return result;
+}
+
 function extractValue(inputString) {
-    const match = inputString.match(/\d+/);
+    const match = inputString.match(/-?\d+/);
+
     return match ? parseInt(match[0]) : 0;
 }
 
