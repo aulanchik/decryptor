@@ -8,11 +8,14 @@ const { API_URL, CONTENDER } = process.env;
 async function fetchInitialTask(contender) {
     try {
         const { data } = await axios.get(`${API_URL}/${contender}`);
-
         console.log(data);
-        const result = decrypt(data.encrypted_path, data.encryption_method);
-        await fetchNextTask(result);
 
+        const result = decrypt(data.encrypted_path, data.encryption_method);
+
+        const tasks = [];
+        tasks.push(fetchNextTask(result));
+        
+        await Promise.all(tasks);
     } catch(error) {
         console.error(`Failed to fetch initial task: ${error.message || error}`);
     }
@@ -21,8 +24,8 @@ async function fetchInitialTask(contender) {
 async function fetchNextTask(token) {
     try {
         const { data } = await axios.get(`${API_URL}/${token}`);
-        const result = decrypt(data.encrypted_path, data.encryption_method);
         console.log(`\nChallenge ${data.level}: `, data);
+        const result = decrypt(data.encrypted_path, data.encryption_method);
         await fetchNextTask(result);
     } catch (error) {
         console.error(`Failed to fetch task: ${error.message || error}`);
@@ -30,7 +33,7 @@ async function fetchNextTask(token) {
 }
 
 function decrypt(token, method) {
-    const path = token.replace(/[^a-zA-Z0-9\s,\[\]_]/g, '').replace(/task_/g, '');
+    const path = token.replace('task_', '');
 
     switch(method) {
         case 'nothing':
@@ -50,7 +53,12 @@ function decrypt(token, method) {
             }
 
             if(method.includes('to ASCII value of each character')) {
-                return `task_${performOperationToAscii(path, method)}`;
+                const decryptedTask = performOperationToAscii(path, method);
+                return `task_${cleanupString(decryptedTask)}`;
+            }
+
+            if(method.includes('encoded it with custom hex character set')) {
+                return `task_${decodeCustomHexSet(path, method)}`;
             }
 
             throw new Error(`Unknown encryption method received: ${method}`);
@@ -67,16 +75,12 @@ function convertAsciiToJson(inputString) {
 }
 
 function swapCharacterPairs(inputString) {
-    let cleanString = inputString.replace(/\s/g, '').trim();
-    let result = ''; 
-    
-    for (let i = 0; i < cleanString.length; i += 2) {
-        const firstCharacter = cleanString[i];
-        const secondCharacter = cleanString[i + 1];
-        result += secondCharacter ? secondCharacter + firstCharacter : firstCharacter;
-    }
+    const cleanString = inputString.replace(/\s/g, '').trim();
 
-    return result;
+    return cleanString.replace(/../g, (match) => {
+        const [firstChar, secondChar] = match;
+        return secondChar ? `${secondChar}${firstChar}` : firstChar;
+    });
 }
 
 function performCircularShift(inputString, method) {
@@ -86,15 +90,20 @@ function performCircularShift(inputString, method) {
 }
 
 function performOperationToAscii(inputString, method) {
-    const value = extractValue(method);
-    let result = '';
+    const shiftValue = extractValue(method);
+    const decryptedString = inputString
+        .split('')
+        .map((char) => {
+            const originalCharCode = char.charCodeAt(0);
+            const shiftedCharCode = originalCharCode + shiftValue;
+            return String.fromCharCode(shiftedCharCode);
+        })
+        .join('');
+    return decryptedString;
+}
 
-    for (let char of inputString) {
-        const asciiCode = char.charCodeAt(0);
-        const newAsciiCode = asciiCode + value;
-        result += String.fromCharCode(newAsciiCode);
-    }
-    return result;
+function cleanupString(inputString) {
+    return inputString.replace(/[^a-zA-Z0-9-_:?;]/g, ''); 
 }
 
 function extractValue(inputString) {
@@ -104,6 +113,38 @@ function extractValue(inputString) {
 
 function decodeBase64(inputString) {
     return Buffer.from(inputString, 'base64').toString('ascii');
+}
+
+function decodeCustomHexSet(inputString, method) {
+    const parts = method.split('custom hex character set ');
+    if (parts.length < 2) {
+        throw new Error('Custom hex character set not found in method');
+    }
+
+    const customHexSet = parts[1].slice(0, 16);
+    const encryptedHex = inputString.replace('task_', '');
+
+    if (customHexSet.length !== 16) {
+        throw new Error('Custom hex character set length is not 16');
+    }
+
+    const standardHexSet = '0123456789abcdef';
+    const hexMapping = {};
+    for (let i = 0; i < customHexSet.length; i++) {
+        hexMapping[customHexSet[i]] = standardHexSet[i];
+    }
+
+    const standardHexString = encryptedHex.split('')
+        .map(char => hexMapping[char] || '')
+        .join('');
+
+    if (standardHexString.length % 2 !== 0) {
+        throw new Error('Invalid standard hex string length');
+    }
+
+    const buffer = Buffer.from(standardHexString, 'hex');
+
+    return buffer.toString('utf8');
 }
 
 function main() {
