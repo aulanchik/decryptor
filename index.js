@@ -91,15 +91,7 @@ function performCircularShift(inputString, method) {
 
 function performOperationToAscii(inputString, method) {
     const shiftValue = extractValue(method);
-    const decryptedString = inputString
-        .split('')
-        .map((char) => {
-            const originalCharCode = char.charCodeAt(0);
-            const shiftedCharCode = originalCharCode + shiftValue;
-            return String.fromCharCode(shiftedCharCode);
-        })
-        .join('');
-    return decryptedString;
+    return Array.from(inputString, char => String.fromCharCode(char.charCodeAt(0) + shiftValue)).join('');
 }
 
 function cleanupString(inputString) {
